@@ -4,7 +4,7 @@ Intraday Charts - Real-time intraday analysis
 Features:
 - Multiple timeframes (1m, 5m, 15m, 1h)
 - Volume profile
-- Technical indicators (SMA, EMA, RSI, MACD)
+- Technical indicators using pandas-ta (130+ indicators)
 - Real-time updates
 - Interactive charts
 
@@ -17,36 +17,29 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 from libs.smart_data_router import SmartDataRouter
 from libs.broker_manager import BrokerManager
+import pandas_ta as ta
 
 
-def calculate_sma(df: pd.DataFrame, period: int, column: str = 'close') -> pd.Series:
-    """Calculate Simple Moving Average"""
-    return df[column].rolling(window=period).mean()
-
-
-def calculate_ema(df: pd.DataFrame, period: int, column: str = 'close') -> pd.Series:
-    """Calculate Exponential Moving Average"""
-    return df[column].ewm(span=period, adjust=False).mean()
-
-
-def calculate_rsi(df: pd.DataFrame, period: int = 14, column: str = 'close') -> pd.Series:
-    """Calculate Relative Strength Index"""
-    delta = df[column].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
-    rsi = 100 - (100 / (1 + rs))
-    return rsi
-
-
-def calculate_macd(df: pd.DataFrame, fast=12, slow=26, signal=9, column: str = 'close'):
-    """Calculate MACD"""
-    ema_fast = df[column].ewm(span=fast, adjust=False).mean()
-    ema_slow = df[column].ewm(span=slow, adjust=False).mean()
-    macd = ema_fast - ema_slow
-    signal_line = macd.ewm(span=signal, adjust=False).mean()
-    histogram = macd - signal_line
-    return macd, signal_line, histogram
+def add_technical_indicators(df: pd.DataFrame, indicators: dict) -> pd.DataFrame:
+    """Add technical indicators using pandas-ta"""
+    
+    # Simple Moving Average
+    if indicators.get('sma_20'):
+        df.ta.sma(length=20, append=True)
+    
+    # Exponential Moving Average
+    if indicators.get('ema_50'):
+        df.ta.ema(length=50, append=True)
+    
+    # Relative Strength Index
+    if indicators.get('rsi'):
+        df.ta.rsi(length=14, append=True)
+    
+    # MACD
+    if indicators.get('macd'):
+        df.ta.macd(fast=12, slow=26, signal=9, append=True)
+    
+    return df
 
 
 def create_candlestick_chart(df: pd.DataFrame, symbol: str, interval: str, indicators: dict):
@@ -107,22 +100,22 @@ def create_candlestick_chart(df: pd.DataFrame, symbol: str, interval: str, indic
     )
     
     # Moving Averages
-    if indicators.get('sma_20'):
+    if indicators.get('sma_20') and 'SMA_20' in df.columns:
         fig.add_trace(
             go.Scatter(
                 x=df.index,
-                y=calculate_sma(df, 20),
+                y=df['SMA_20'],
                 name="SMA 20",
                 line=dict(color='orange', width=1)
             ),
             row=1, col=1, secondary_y=False
         )
     
-    if indicators.get('ema_50'):
+    if indicators.get('ema_50') and 'EMA_50' in df.columns:
         fig.add_trace(
             go.Scatter(
                 x=df.index,
-                y=calculate_ema(df, 50),
+                y=df['EMA_50'],
                 name="EMA 50",
                 line=dict(color='blue', width=1)
             ),
@@ -131,12 +124,11 @@ def create_candlestick_chart(df: pd.DataFrame, symbol: str, interval: str, indic
     
     # RSI
     current_row = 2
-    if indicators.get('rsi'):
-        rsi = calculate_rsi(df)
+    if indicators.get('rsi') and 'RSI_14' in df.columns:
         fig.add_trace(
             go.Scatter(
                 x=df.index,
-                y=rsi,
+                y=df['RSI_14'],
                 name="RSI",
                 line=dict(color='purple', width=1)
             ),
@@ -150,13 +142,11 @@ def create_candlestick_chart(df: pd.DataFrame, symbol: str, interval: str, indic
         current_row += 1
     
     # MACD
-    if indicators.get('macd'):
-        macd, signal, histogram = calculate_macd(df)
-        
+    if indicators.get('macd') and 'MACD_12_26_9' in df.columns:
         fig.add_trace(
             go.Scatter(
                 x=df.index,
-                y=macd,
+                y=df['MACD_12_26_9'],
                 name="MACD",
                 line=dict(color='blue', width=1)
             ),
@@ -166,18 +156,18 @@ def create_candlestick_chart(df: pd.DataFrame, symbol: str, interval: str, indic
         fig.add_trace(
             go.Scatter(
                 x=df.index,
-                y=signal,
+                y=df['MACDs_12_26_9'],
                 name="Signal",
                 line=dict(color='orange', width=1)
             ),
             row=current_row, col=1
         )
         
-        colors = ['red' if h < 0 else 'green' for h in histogram]
+        colors = ['red' if h < 0 else 'green' for h in df['MACDh_12_26_9']]
         fig.add_trace(
             go.Bar(
                 x=df.index,
-                y=histogram,
+                y=df['MACDh_12_26_9'],
                 name="Histogram",
                 marker_color=colors
             ),
@@ -280,6 +270,9 @@ def show_intraday_charts():
                     # Convert timestamp to datetime
                     df['datetime'] = pd.to_datetime(df['timestamp'], unit='s')
                     df.set_index('datetime', inplace=True)
+                    
+                    # Add technical indicators using pandas-ta
+                    df = add_technical_indicators(df, indicators)
                     
                     # Display current price
                     current_price = df['close'].iloc[-1]
