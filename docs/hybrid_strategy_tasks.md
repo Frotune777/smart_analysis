@@ -22,30 +22,30 @@
 - [x] Add cache configuration
 - [x] Document configuration options
 
-## Week 2: Real-Time Features 📊
+## Week 2: Real-Time Features 📊 ✅
 
 ### Live Quotes
-- [ ] Create `pages/live_quotes.py`
-- [ ] Implement quote display cards
-- [ ] Add auto-refresh (5 sec) when the market is live and broker is connected
-- [ ] Add watchlist management
-- [ ] Add to dashboard navigation
+- [x] Create `pages/live_quotes.py`
+- [x] Implement quote display cards
+- [x] Add auto-refresh (5 sec) when the market is live and broker is connected
+- [x] Add watchlist management
+- [x] Add to dashboard navigation
 
 ### Order Placement
-- [ ] Create `pages/order_placement.py`
-- [ ] Build order form UI
-- [ ] Implement market/limit/SL orders
-- [ ] Add position sizing calculator
-- [ ] Add risk checks
-- [ ] Integrate with broker API
+- [x] Create `pages/order_placement.py`
+- [x] Build order form UI
+- [x] Implement market/limit/SL orders
+- [x] Add position sizing calculator
+- [x] Add risk checks
+- [x] Integrate with broker API
 
 ### Position Monitor
-- [ ] Create `pages/positions.py`
-- [ ] Display open positions
-- [ ] Calculate live P&L
-- [ ] Add quick exit buttons
-- [ ] Add auto-refresh
-- [ ] Add to dashboard navigation
+- [x] Create `pages/positions.py`
+- [x] Display open positions
+- [x] Calculate live P&L
+- [x] Add quick exit buttons
+- [x] Add auto-refresh
+- [x] Add to dashboard navigation
 
 ## Week 3: Intraday Analysis 📈
 
