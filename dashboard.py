@@ -44,6 +44,21 @@ def page_quad_report():
         symbols = config.get("tracked_symbols", ["SBIN", "TCS", "RELIANCE"])
         symbol = st.selectbox("Select Symbol for Report", symbols)
         
+        # Real-time price (if broker available)
+        try:
+            from libs.smart_data_router import SmartDataRouter
+            router = SmartDataRouter()
+            quote = router.get_quote(symbol, 'NSE')
+            if quote:
+                st.markdown("### 🔴 LIVE PRICE")
+                ltp = quote.get('ltp', 0)
+                prev_close = quote.get('prev_close', 0)
+                change_pct = ((ltp - prev_close) / prev_close * 100) if prev_close else 0
+                st.metric("Current", f"₹{ltp:,.2f}", delta=f"{change_pct:+.2f}%")
+                st.divider()
+        except:
+            pass
+        
         if st.button("Generate Report", type="primary"):
             with st.spinner(f"Analyzing {symbol} across 4 dimensions..."):
                 analyzer = QuadAnalyzer()
@@ -301,29 +316,88 @@ def page_stock_analysis():
     config = load_config()
     symbols = config.get("tracked_symbols", [])
     
+    # Real-time price header
+    try:
+        from libs.smart_data_router import SmartDataRouter
+        from libs.broker_manager import BrokerManager
+        
+        router = SmartDataRouter()
+        broker_manager = BrokerManager()
+        active_broker = broker_manager.get_active_broker()
+        has_broker = active_broker is not None
+    except:
+        has_broker = False
+        router = None
+    
     col1, col2 = st.columns([1, 3])
     
     with col1:
         symbol = st.selectbox("Select Symbol", symbols)
+        
+        # Real-time price (if broker available)
+        if has_broker and router:
+            try:
+                quote = router.get_quote(symbol, 'NSE')
+                if quote:
+                    st.markdown("### 🔴 LIVE")
+                    ltp = quote.get('ltp', 0)
+                    prev_close = quote.get('prev_close', 0)
+                    change = ltp - prev_close
+                    change_pct = (change / prev_close * 100) if prev_close else 0
+                    
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        st.metric("Live Price", f"₹{ltp:,.2f}", 
+                                 delta=f"{change:+.2f} ({change_pct:+.2f}%)")
+                    with col_b:
+                        st.metric("Volume", f"{quote.get('volume', 0):,.0f}")
+                    
+                    # Quick trade buttons
+                    st.markdown("#### Quick Trade")
+                    col_buy, col_sell = st.columns(2)
+                    with col_buy:
+                        if st.button("🟢 BUY", use_container_width=True, type="primary"):
+                            st.session_state['quick_trade'] = {'symbol': symbol, 'action': 'BUY', 'price': ltp}
+                            st.switch_page("pages/order_placement.py")
+                    with col_sell:
+                        if st.button("🔴 SELL", use_container_width=True):
+                            st.session_state['quick_trade'] = {'symbol': symbol, 'action': 'SELL', 'price': ltp}
+                            st.switch_page("pages/order_placement.py")
+                    
+                    st.divider()
+            except Exception as e:
+                st.caption(f"Live data unavailable: {str(e)}")
+        
+        # Load historical data
         df = load_stock_data(symbol)
         
         if df is None:
             st.error(f"No data found for {symbol}")
             return
 
-        # Show basics
+        # Show basics (historical)
         last_row = df.iloc[-1]
         prev_row = df.iloc[-2]
         change = last_row['Close'] - prev_row['Close']
         pct_change = (change / prev_row['Close']) * 100
         
-        st.metric("Latest Price", f"₹{last_row['Close']:.2f}", f"{change:.2f} ({pct_change:.2f}%)")
+        if not has_broker:
+            st.metric("Latest Price", f"₹{last_row['Close']:.2f}", f"{change:.2f} ({pct_change:.2f}%)")
         
         st.subheader("Indicators")
         show_sma = st.checkbox("Show SMA (50/200)", value=True)
         show_bb = st.checkbox("Show Bollinger Bands")
         show_rsi = st.checkbox("Show RSI")
         show_macd = st.checkbox("Show MACD")
+        
+        # Market depth widget
+        if has_broker and router:
+            with st.expander("📊 Market Depth"):
+                try:
+                    from components.market_depth import display_market_depth
+                    display_market_depth(symbol, 'NSE', router)
+                except Exception as e:
+                    st.error(f"Market depth unavailable: {str(e)}")
 
     with col2:
         # Main Chart
