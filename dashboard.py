@@ -284,6 +284,10 @@ def render_sidebar():
         "Live Quotes",
         "Order Placement",
         "Positions",
+        "---INTRADAY---",
+        "Intraday Charts",
+        "Market Depth",
+        "Intraday Scanner",
         "---CONFIG---",
         "Broker Configuration",
         "Data Management", 
@@ -2413,6 +2417,17 @@ def main():
     elif page == "Positions":
         from pages.positions import show_positions
         show_positions()
+    elif page == "---INTRADAY---":
+        st.info("Select an intraday analysis page from the menu")
+    elif page == "Intraday Charts":
+        from pages.intraday_charts import show_intraday_charts
+        show_intraday_charts()
+    elif page == "Market Depth":
+        from components.market_depth import show_market_depth_page
+        show_market_depth_page()
+    elif page == "Intraday Scanner":
+        from pages.intraday_scanner import show_intraday_scanner
+        show_intraday_scanner()
     elif page == "---CONFIG---":
         st.info("Select a configuration page from the menu")
     elif page == "Broker Configuration":
