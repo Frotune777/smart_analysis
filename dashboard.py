@@ -280,6 +280,11 @@ def render_sidebar():
         "Strategy Backtesting",
         "PKScreener",
         "MLOps Monitor",
+        "---TRADING---",
+        "Live Quotes",
+        "Order Placement",
+        "Positions",
+        "---CONFIG---",
         "Broker Configuration",
         "Data Management", 
         "Database Info"
@@ -2395,8 +2400,21 @@ def main():
         page_ml_predictions()
     elif page == "PKScreener":
         page_pkscreener()
-    elif page == "Strategy Backtesting":
-        page_backtesting()
+    elif page == "MLOps Monitor":
+        page_mlops_monitor()
+    elif page == "---TRADING---":
+        st.info("Select a trading page from the menu")
+    elif page == "Live Quotes":
+        from pages.live_quotes import show_live_quotes
+        show_live_quotes()
+    elif page == "Order Placement":
+        from pages.order_placement import show_order_placement
+        show_order_placement()
+    elif page == "Positions":
+        from pages.positions import show_positions
+        show_positions()
+    elif page == "---CONFIG---":
+        st.info("Select a configuration page from the menu")
     elif page == "Broker Configuration":
         from pages.broker_config import page_broker_config
         page_broker_config()

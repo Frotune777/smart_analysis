@@ -27,7 +27,7 @@
 ### Live Quotes
 - [ ] Create `pages/live_quotes.py`
 - [ ] Implement quote display cards
-- [ ] Add auto-refresh (5 sec)
+- [ ] Add auto-refresh (5 sec) when the market is live and broker is connected
 - [ ] Add watchlist management
 - [ ] Add to dashboard navigation
 
