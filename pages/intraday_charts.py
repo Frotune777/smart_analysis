@@ -4,7 +4,7 @@ Intraday Charts - Real-time intraday analysis
 Features:
 - Multiple timeframes (1m, 5m, 15m, 1h)
 - Volume profile
-- Technical indicators using pandas-ta (130+ indicators)
+- Technical indicators using TA-Lib (150+ professional indicators)
 - Real-time updates
 - Interactive charts
 
@@ -17,27 +17,37 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 from libs.smart_data_router import SmartDataRouter
 from libs.broker_manager import BrokerManager
-import pandas_ta as ta
+import talib
+import numpy as np
 
 
 def add_technical_indicators(df: pd.DataFrame, indicators: dict) -> pd.DataFrame:
-    """Add technical indicators using pandas-ta"""
+    """Add technical indicators using TA-Lib"""
+    
+    # Convert to numpy arrays for TA-Lib
+    close = df['close'].values
+    high = df['high'].values
+    low = df['low'].values
+    volume = df['volume'].values
     
     # Simple Moving Average
     if indicators.get('sma_20'):
-        df.ta.sma(length=20, append=True)
+        df['SMA_20'] = talib.SMA(close, timeperiod=20)
     
     # Exponential Moving Average
     if indicators.get('ema_50'):
-        df.ta.ema(length=50, append=True)
+        df['EMA_50'] = talib.EMA(close, timeperiod=50)
     
     # Relative Strength Index
     if indicators.get('rsi'):
-        df.ta.rsi(length=14, append=True)
+        df['RSI_14'] = talib.RSI(close, timeperiod=14)
     
     # MACD
     if indicators.get('macd'):
-        df.ta.macd(fast=12, slow=26, signal=9, append=True)
+        macd, signal, hist = talib.MACD(close, fastperiod=12, slowperiod=26, signalperiod=9)
+        df['MACD_12_26_9'] = macd
+        df['MACDs_12_26_9'] = signal
+        df['MACDh_12_26_9'] = hist
     
     return df
 
