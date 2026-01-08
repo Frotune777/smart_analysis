@@ -2427,6 +2427,56 @@ def main():
         initial_sidebar_state="expanded"
     )
     
+    # Dashboard Home Page (if no specific page selected)
+    page = render_sidebar()
+    
+    # Show dashboard home if "Stock Analysis" is default
+    if page == "Stock Analysis":
+        # Add live trading widgets at top
+        try:
+            from libs.smart_data_router import SmartDataRouter
+            from libs.broker_manager import BrokerManager
+            from datetime import datetime, time as dt_time
+            
+            broker_manager = BrokerManager()
+            active_broker = broker_manager.get_active_broker()
+            
+            if active_broker:
+                router = SmartDataRouter()
+                
+                # Market status banner
+                now = datetime.now()
+                current_time = now.time()
+                market_start = dt_time(9, 15)
+                market_end = dt_time(15, 30)
+                is_weekday = now.weekday() < 5
+                is_trading_hours = market_start <= current_time <= market_end
+                market_open = is_weekday and is_trading_hours
+                
+                if market_open:
+                    st.success("🟢 **Market is OPEN** - Live trading enabled", icon="🟢")
+                else:
+                    st.info("🔴 **Market is CLOSED** - Next session: 9:15 AM", icon="🔴")
+                
+                # Quick stats row
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("Active Broker", active_broker.upper())
+                with col2:
+                    st.metric("Market Status", "OPEN" if market_open else "CLOSED")
+                with col3:
+                    # Mock positions count
+                    positions_count = len(st.session_state.get('mock_positions', []))
+                    st.metric("Open Positions", positions_count)
+                with col4:
+                    # Mock P&L
+                    st.metric("Today's P&L", "₹0.00", delta="0.00%")
+                
+                st.divider()
+        except:
+            pass
+    
     # Broker credential check on startup
     try:
         from libs.broker_manager import BrokerManager
@@ -2461,7 +2511,7 @@ def main():
         st.session_state['force_broker_config'] = False
         return
     
-    page = render_sidebar()
+    # Page routing
     if page == "Stock Analysis":
         page_stock_analysis()
     elif page == "Market Overview":
