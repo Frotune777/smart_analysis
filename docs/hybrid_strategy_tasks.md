@@ -47,29 +47,29 @@
 - [x] Add auto-refresh
 - [x] Add to dashboard navigation
 
-## Week 3: Intraday Analysis 📈
+## Week 3: Intraday Analysis 📈 ✅
 
 ### Intraday Charts
-- [ ] Create `pages/intraday_charts.py`
-- [ ] Implement 1m/5m/15m/1h charts
-- [ ] Add volume profile
-- [ ] Add technical indicators
-- [ ] Add timeframe selector
-- [ ] Integrate with broker API
+- [x] Create `pages/intraday_charts.py`
+- [x] Implement 1m/5m/15m/1h charts
+- [x] Add volume profile
+- [x] Add technical indicators (using pandas-ta)
+- [x] Add timeframe selector
+- [x] Integrate with broker API
 
 ### Market Depth
-- [ ] Create `components/market_depth.py`
-- [ ] Display top 5 bid/ask levels
-- [ ] Add order book visualization
-- [ ] Calculate cumulative quantity
-- [ ] Add real-time updates
+- [x] Create `components/market_depth.py`
+- [x] Display top 5 bid/ask levels
+- [x] Add order book visualization
+- [x] Calculate cumulative quantity
+- [x] Add real-time updates
 
 ### Intraday Scanner
-- [ ] Create `pages/intraday_scanner.py`
-- [ ] Implement volume breakout scanner
-- [ ] Add momentum scanner
-- [ ] Add price action patterns
-- [ ] Add alert system
+- [x] Create `pages/intraday_scanner.py`
+- [x] Implement volume breakout scanner
+- [x] Add momentum scanner
+- [x] Add price action patterns
+- [x] Add alert system
 
 ## Week 4: Integration with Existing Features 🔗
 
