@@ -11,7 +11,7 @@ Supports: AngelOne, Dhan, Fyers
 
 Author: Smart Analysis System
 """
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 import pandas as pd
 from libs.broker_manager import BrokerManager
 
