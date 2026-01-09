@@ -37,15 +37,27 @@ def authenticate_broker(clientcode, broker_pin, totp_code):
         # Add status attribute for compatibility with the existing codebase
         response.status = response.status_code
         
-        data = response.text
-        data_dict = json.loads(data)
-
-        if 'data' in data_dict and 'jwtToken' in data_dict['data']:
+        # Parse response
+        try:
+            data = response.text
+            data_dict = json.loads(data) if data else None
+        except json.JSONDecodeError:
+            return None, None, f"Invalid response from broker: {response.text[:100]}"
+        
+        # Check if response is valid
+        if not data_dict:
+            return None, None, "Empty response from broker"
+        
+        # Check for successful authentication
+        if isinstance(data_dict, dict) and 'data' in data_dict and data_dict['data'] and 'jwtToken' in data_dict['data']:
             # Return both JWT token and feed token if available (None if not)
             auth_token = data_dict['data']['jwtToken']
             feed_token = data_dict['data'].get('feedToken', None)
             return auth_token, feed_token, None
         else:
-            return None, None, data_dict.get('message', 'Authentication failed. Please try again.')
+            # Extract error message
+            error_msg = data_dict.get('message', 'Authentication failed') if isinstance(data_dict, dict) else 'Authentication failed'
+            return None, None, error_msg
     except Exception as e:
-        return None, None, str(e)
+        return None, None, f"Authentication error: {str(e)}"
+
